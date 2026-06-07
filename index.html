@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitHub Issues Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Manrope', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          },
+          animation: {
+            'spin-fast': 'spin 0.7s linear infinite',
+            'fade-in': 'fadeIn 0.15s ease',
+            'slide-up': 'slideUp 0.2s ease',
+            'card-in': 'cardIn 0.3s ease backwards',
+          },
+          keyframes: {
+            fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+            slideUp: { from: { opacity: '0', transform: 'translateY(20px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+            cardIn: { from: { opacity: '0', transform: 'translateY(10px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+  <style>
+    body { font-family: 'Manrope', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.7s linear infinite; }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card-anim { animation: cardIn 0.3s ease backwards; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-anim { animation: slideUp 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .fade-in { animation: fadeIn 0.15s ease; }
+    .search-input { transition: width 0.3s ease, border-color 0.2s ease; }
+    .search-input:focus { width: 280px !important; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .card-hover { transition: transform 0.15s ease, box-shadow 0.2s ease; }
+    /* Line clamp */
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-900">
+
+<div id="login-page" class="min-h-screen flex items-center justify-center bg-[#F8FAFC]-100 p-4">
+  <div class="bg-white  rounded-[6px] p-8 w-full max-w-md shadow-xl">
+
+    
+    <div class=" p-6 text-center mb-6">
+      <div class="w-[100px] h-[100px]  flex items-center justify-center mx-auto mb-3">
+        <img src="assets/github-logo.png" alt="">
+      </div>
+      <h1 class="text-xl font-extrabold text-gray-900">GitHub Issues Tracker</h1>
+      <p class="text-sm text-gray-500 mt-1">Sign in to manage your issues</p>
+    </div>
+
+    
+    <div id="login-error" class="hidden bg-red-100 text-red-700 text-sm rounded-lg px-4 py-2.5 mb-4 flex items-center gap-2">
+      <i class="fas fa-exclamation-circle"></i> Invalid username or password.
+    </div>
+
+    
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-black mb-1.5">Username</label>
+      <input id="username" type="text" placeholder="Enter Username"
+        class="w-full px-3.5 py-2.5 border-2 border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-indigo-500 focus:bg-white transition-colors" />
+      <p class="text-xs text-[#4A00FF] mt-1 font-medium">Default: admin</p>
+    </div>
+
+   
+    <div class="mb-5">
+      <label class="block text-sm font-semibold text-black mb-1.5">Password</label>
+      <input id="password" type="password" placeholder="Enter Password"
+        class="w-full px-3.5 py-2.5 border-2 border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-indigo-500 focus:bg-white transition-colors" />
+      <p class="text-xs text-[#4A00FF] mt-1 font-medium">Default: admin123</p>
+    </div>
+
+    
+    <button onclick="doLogin()"
+      class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold rounded-lg transition-all text-base tracking-wide">
+      Sign In
+    </button>
+
+    
+    <div class="relative flex items-center my-5">
+      <div class="flex-1 border-t border-gray-200"></div>
+      <span class="px-3 text-sm text-gray-400">OR</span>
+      <div class="flex-1 border-t border-gray-200"></div>
+    </div>
+
+    <p class="text-xs text-gray-400 mb-2 text-center">Demo Credentials:</p>
+
+    
+    <div class=" bg-[#F8FAFC] rounded-lg p-4 text-center">
+      
+      <p class="text-sm text-gray-800 leading-relaxed">
+        <strong>Username:</strong> <span class="font-mono font-semibold">admin</span><br>
+        <strong>Password:</strong> <span class="font-mono font-semibold">admin123</span>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
+<div id="main-page" class="hidden min-h-screen">
+
+  
+  <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+
+      
+      <a href="#" class="flex items-center gap-2.5 font-extrabold text-gray-900 text-base shrink-0">
+        <div class="w-[36px] h-[37px] rounded-full flex items-center justify-center">
+          <img src="assets/github-logo.png" alt="">
+        </div>
+        <span class="hidden sm:inline">GitHub Issues Tracker</span>
+      </a>
+
+      
+      <div class="flex items-center gap-3">
+        <!-- Search -->
+        <div class="relative flex items-center">
+          <i class="fas fa-search absolute left-3 text-gray-400 text-xs pointer-events-none"></i>
+          <input id="search-input" type="text" placeholder="Search issues..."
+            oninput="handleSearch()"
+            style="width:200px"
+            class="search-input pl-8 pr-3 py-2 border-2 border-gray-200 rounded-lg text-sm bg-gray-50 outline-none focus:border-indigo-500 focus:bg-white" />
+        </div>
+
+        
+        <button class="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap">
+          <i class="fas fa-plus text-xs"></i>
+          <span class="hidden sm:inline">New Issue</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+   
+    <div class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 mb-4 flex gap-2">
+      <button id="tab-all" onclick="setTab('all')"
+        class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-indigo-600 text-white">
+        All
+      </button>
+      <button id="tab-open" onclick="setTab('open')"
+        class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        Open
+      </button>
+      <button id="tab-closed" onclick="setTab('closed')"
+        class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:bg-gray-100 hover:text-gray-800">
+        Closed
+      </button>
+    </div>
+
+    
+    <div class="bg-white border border-gray-200 rounded-xl px-5 py-4 mb-5 flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
+          <i class="fas fa-circle-dot text-indigo-600"></i>
+        </div>
+        <div>
+          <div id="issues-count" class="text-lg font-extrabold text-gray-900">0 Issues</div>
+          <div class="text-xs text-gray-500">Track and manage your project issues</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-5 text-sm font-semibold">
+        <div class="flex items-center gap-1.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-green-600"></div>
+          <span class="text-gray-600">Open</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-2.5 h-2.5 rounded-full bg-violet-600"></div>
+          <span class="text-gray-600">Closed</span>
+        </div>
+      </div>
+    </div>
+
+    
+    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Spinner initially -->
+      <div class="col-span-full flex justify-center items-center py-16">
+        <div class="spinner w-10 h-10 border-4 border-gray-200 border-t-indigo-600 rounded-full"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div id="modal-overlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[999] flex items-center justify-center p-4 fade-in"
+  onclick="closeModal(event)">
+  <div id="modal-box" class="bg-white rounded-2xl w-full max-w-lg shadow-2xl modal-anim overflow-hidden">
+
+    <!-- Modal header -->
+    <div class="px-6 pt-6 pb-0">
+      <h2 id="modal-title" class="text-lg font-extrabold text-gray-900 mb-3"></h2>
+      <div class="flex items-center gap-3 text-sm text-gray-500 mb-3 flex-wrap">
+        <span id="modal-status-chip" class="px-3 py-0.5 rounded-full text-xs font-bold"></span>
+        <span id="modal-meta-text"></span>
+      </div>
+      <div id="modal-labels" class="flex flex-wrap gap-1.5 mb-4"></div>
+    </div>
+
+    
+    <div class="px-6 pb-0">
+      <p id="modal-desc" class="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-xl px-4 py-3 mb-4"></p>
+      <div class="grid grid-cols-2 gap-4 mb-5">
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Assignee:</p>
+          <p id="modal-assignee" class="text-sm font-bold text-gray-800"></p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Priority:</p>
+          <div id="modal-priority"></div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="bg-gray-50 px-6 py-4 flex justify-end">
+      <button onclick="closeModal()" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-sm transition-colors">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const CREDS = { username: 'admin', password: 'admin123' };
+
+function doLogin() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  const err = document.getElementById('login-error');
+  if (u === CREDS.username && p === CREDS.password) {
+    document.getElementById('login-page').classList.add('hidden');
+    document.getElementById('main-page').classList.remove('hidden');
+    initApp();
+  } else {
+    err.classList.remove('hidden');
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('username').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+
+
+const TITLES = [
+  'Fix Navigation Menu On Mobile Devices','Fix broken image uploads','Add dark mode toggle',
+  'Resolve login timeout issue','Update dashboard chart colors','Fix API rate limiting error',
+  'Add export to CSV feature','Fix broken pagination','Improve search performance',
+  'Add notification bell','Fix memory leak in WebSocket','Add user avatar upload',
+  'Resolve CORS error on production','Fix date picker timezone bug','Add lazy loading for images',
+  'Improve mobile responsiveness','Fix dropdown z-index issue','Add unit tests for auth module',
+  'Fix broken redirect after login','Add keyboard shortcuts support',
+  'Resolve cache invalidation bug','Fix typo in error messages','Add multi-language support',
+  'Fix tooltip flickering on hover','Improve error handling in forms','Add PWA support',
+  'Fix session expiry handling','Add drag-and-drop file upload','Resolve edge case in sorting',
+  'Fix footer layout on iOS Safari'
+];
+const AUTHORS = ['john_doe','jane_smith','dev_alice','Fahim Ahmed','bob_coder','sarah_dev'];
+const ASSIGNEES = ['John Doe','Jane Smith','Alice Dev','Fahim Ahmed','Bob Coder'];
+const LABELS_POOL = [
+  ['bug'],['bug','help wanted'],['enhancement'],['bug','help wanted','enhancement'],
+  ['feature request'],['documentation'],['help wanted'],['bug','feature request']
+];
+
+function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function rndDate() {
+  const d = new Date(2024, 0, 1 + Math.floor(Math.random() * 365));
+  return d.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+}
+
+function generateIssues() {
+  return Array.from({ length: 70 }, (_, i) => ({
+    id: i + 1,
+    title: TITLES[i % TITLES.length],
+    description: "The navigation menu doesn't collapse properly on mobile devices. Need to fix the responsive behavior.",
+    status: Math.random() > 0.28 ? 'open' : 'closed',
+    author: rnd(AUTHORS),
+    assignee: rnd(ASSIGNEES),
+    priority: rnd(['HIGH', 'MEDIUM', 'LOW']),
+    labels: rnd(LABELS_POOL),
+    createdAt: rndDate(),
+  }));
+}
+
+let allIssues = [];
+let currentTab = 'all';
+let searchQuery = '';
+
+
+function initApp() {
+  showSpinner();
+  setTimeout(() => { allIssues = generateIssues(); renderCards(); }, 800);
+}
+
+function showSpinner() {
+  document.getElementById('cards-grid').innerHTML = `
+    <div class="col-span-full flex justify-center items-center py-16">
+      <div class="spinner w-10 h-10 border-4 border-gray-200 border-t-indigo-600 rounded-full"></div>
+    </div>`;
+}
+
+function setTab(tab) {
+  currentTab = tab;
+  ['all','open','closed'].forEach(t => {
+    const btn = document.getElementById('tab-' + t);
+    if (t === tab) {
+      btn.className = 'tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all bg-indigo-600 text-white';
+    } else {
+      btn.className = 'tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:bg-gray-100 hover:text-gray-800';
+    }
+  });
+  showSpinner();
+  setTimeout(renderCards, 400);
+}
+
+function handleSearch() {
+  searchQuery = document.getElementById('search-input').value.toLowerCase();
+  renderCards();
+}
+
+function getFiltered() {
+  let list = allIssues;
+  if (currentTab === 'open') list = list.filter(i => i.status === 'open');
+  if (currentTab === 'closed') list = list.filter(i => i.status === 'closed');
+  if (searchQuery) list = list.filter(i =>
+    i.title.toLowerCase().includes(searchQuery) ||
+    i.description.toLowerCase().includes(searchQuery) ||
+    i.author.toLowerCase().includes(searchQuery)
+  );
+  return list;
+}
+
+
+function priorityClasses(p) {
+  return {
+    HIGH: 'bg-red-100 text-red-700',
+    MEDIUM: 'bg-yellow-100 text-yellow-700',
+    LOW: 'bg-blue-100 text-blue-700',
+  }[p] || 'bg-gray-100 text-gray-600';
+}
+
+function labelClasses(l) {
+  return {
+    'bug': 'bg-red-100 text-red-700',
+    'help wanted': 'bg-sky-100 text-sky-700',
+    'enhancement': 'bg-green-100 text-green-700',
+    'feature request': 'bg-amber-100 text-amber-700',
+    'documentation': 'bg-purple-100 text-purple-700',
+  }[l] || 'bg-gray-100 text-gray-600';
+}
+
+function labelIcon(l) {
+  return {
+    'bug': 'fa-bug', 'help wanted': 'fa-hands-helping',
+    'enhancement': 'fa-star', 'feature request': 'fa-lightbulb', 'documentation': 'fa-book'
+  }[l] || 'fa-tag';
+}
+
+function renderCards() {
+  const issues = getFiltered();
+  const grid = document.getElementById('cards-grid');
+  document.getElementById('issues-count').textContent = `${issues.length} Issue${issues.length !== 1 ? 's' : ''}`;
+
+  if (!issues.length) {
+    grid.innerHTML = `
+      <div class="col-span-full text-center py-16 text-gray-400">
+        <i class="fas fa-inbox text-5xl mb-3 block opacity-30"></i>
+        <p class="font-semibold">No issues found</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = issues.map((issue, idx) => {
+    const borderColor = issue.status === 'open' ? 'border-t-green-500' : 'border-t-violet-500';
+    const statusIcon = issue.status === 'open'
+      ? '<i class="fas fa-circle-dot text-green-600 text-sm"></i>'
+      : '<i class="fas fa-circle-check text-violet-600 text-sm"></i>';
+    const labelHtml = issue.labels.map(l =>
+      `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded ${labelClasses(l)}">
+        <i class="fas ${labelIcon(l)} text-[9px]"></i>${l.toUpperCase()}
+      </span>`
+    ).join('');
+
+    return `
+      <div onclick="openModal(${issue.id})"
+        style="animation-delay:${Math.min(idx * 0.04, 0.5)}s"
+        class="card-anim card-hover bg-white border border-gray-200 border-t-4 ${borderColor} rounded-xl p-4 cursor-pointer">
+
+        <div class="flex items-center justify-between mb-2.5">
+          ${statusIcon}
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wide ${priorityClasses(issue.priority)}">
+            ${issue.priority}
+          </span>
+        </div>
+
+        <h3 class="text-sm font-bold text-gray-900 mb-1.5 line-clamp-2 leading-snug">${issue.title}</h3>
+        <p class="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">${issue.description}</p>
+
+        <div class="flex flex-wrap gap-1 mb-3">${labelHtml}</div>
+
+        <div class="text-[11px] text-gray-400 space-y-1">
+          <div class="flex items-center gap-1.5">
+            <i class="fas fa-hashtag text-[9px]"></i>
+            <span>#${issue.id} by ${issue.author}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <i class="fas fa-calendar text-[9px]"></i>
+            <span>${issue.createdAt}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+
+function openModal(id) {
+  const issue = allIssues.find(i => i.id === id);
+  if (!issue) return;
+
+  document.getElementById('modal-title').textContent = issue.title;
+
+  const chip = document.getElementById('modal-status-chip');
+  chip.textContent = issue.status.charAt(0).toUpperCase() + issue.status.slice(1);
+  chip.className = issue.status === 'open'
+    ? 'px-3 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700'
+    : 'px-3 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-700';
+
+  document.getElementById('modal-meta-text').textContent = `Opened by ${issue.author} • ${issue.createdAt}`;
+  document.getElementById('modal-desc').textContent = issue.description;
+  document.getElementById('modal-assignee').textContent = issue.assignee;
+
+  document.getElementById('modal-labels').innerHTML = issue.labels.map(l =>
+    `<span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded ${labelClasses(l)}">
+      <i class="fas ${labelIcon(l)} text-[10px]"></i>${l.toUpperCase()}
+    </span>`
+  ).join('');
+
+  document.getElementById('modal-priority').innerHTML =
+    `<span class="text-xs font-bold px-2.5 py-1 rounded uppercase ${priorityClasses(issue.priority)}">${issue.priority}</span>`;
+
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.add('hidden');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modal-overlay').classList.add('hidden');
+});
+</script>
+</body>
+</html>
